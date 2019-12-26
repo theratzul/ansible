@@ -1,0 +1,31 @@
+---
+
+- hosts: "{{ host }}"
+  connection: local
+  become: true
+
+  vars: 
+    expected_version: 1.8.0_232
+
+  tasks:
+
+  - name: determine if Java is installed
+    command: which java
+    register: oracle_java_task_installed
+
+  - name: Verify that java is installed
+    shell: "test -h /usr/bin/{{ item }}" ### Checks symbolic links
+    changed_when: no			 ### Doesn't put the items with yellow and selects green
+    with_items:
+      - keytool
+      - java
+      - javadoc
+
+  - name: Register java version
+    shell: java -version 2>&1|head -n 1| awk '{ print $3 }'| awk -F "\"" '{ print $2 }'
+    register: javaversion
+    changed_when: no
+
+  - name: This is wrong
+    fail: msg="This is wrong!!!"
+    when: javaversion.stdout != expected_version

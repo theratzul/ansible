@@ -1,0 +1,35 @@
+---
+
+- hosts: "{{host}}"
+  connection: local
+  become: true
+
+  vars:
+    servername: jenkins
+
+  tasks:
+
+  - name: Create ssl directory
+    file:
+      path: /tmp/ssl
+      state: directory
+
+  - name: Create SSL key
+    openssl_privatekey:
+      path: "/tmp/ssl/{{ servername }}.pem"
+      backup: yes
+    register: key
+
+  - name: Create SSL CSR
+    openssl_csr:
+      path: "/tmp/ssl/{{ servername }}.csr"
+      privatekey_path: "{{ key.filename }}"
+      common_name: "{{ servername }}"
+    register: csr
+
+  - name: Create SSL Certificate
+    openssl_certificate:
+      path: "/tmp/ssl/{{ servername }}.crt"
+      privatekey_path: "{{ csr.privatekey }}" 
+      csr_path:  "{{ csr.filename }}"
+      provider: selfsigned
