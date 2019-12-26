@@ -1,0 +1,36 @@
+login: http://jenkins:5984/_utils/#login
+admin/mypassword
+ss -an|grep 5984
+
+Steps:
+------
+root@endava ~]# cp -rfp /home/bopopa/kituri/couchdb/apache-couchdb.repo /etc/yum.repos.d/
+[root@endava ~]# yum install couchdb
+
+Installed:
+  couchdb-2.3.1-1.el8.x86_64           couch-js-1:1.8.5-21.el8.x86_64          
+
+
+[root@endava ~]# systemctl start couchdb
+
+[root@endava ~]# systemctl enable couchdb
+Created symlink /etc/systemd/system/multi-user.target.wants/couchdb.service → /usr/lib/systemd/system/couchdb.service.
+
+[root@endava ~]# systemctl status couchdb
+Dec 26 16:08:22 endava systemd[1]: Started Apache CouchDB.
+
+[root@endava ~]# ss -pnltu
+Netid State   Recv-Q  Send-Q         Local Address:Port      Peer Address:Port                                                                                  
+tcp   LISTEN  0       128                127.0.0.1:5984           0.0.0.0:*      users:(("beam.smp",pid=1857,fd=28))                                            
+
+[root@endava ~]# vi /opt/couchdb/etc/local.ini
+[root@endava ~]# firewall-cmd --zone=public --permanent --add-port=5984/tcp
+success
+
+[root@endava ~]# firewall-cmd --reload
+success
+
+[root@endava ~]# systemctl restart couchdb
+
+[root@endava ~]# curl http://127.0.0.1:5984
+{"couchdb":"Welcome","version":"2.3.1","git_sha":"c298091a4","uuid":"21337e29394cf419f23136dfecd15a6f","features":["pluggable-storage-engines","scheduler"],"vendor":{"name":"The Apache Software Foundation"}}
